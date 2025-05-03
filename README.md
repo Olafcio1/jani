@@ -1,5 +1,5 @@
 # JANI
-JANI is a programming language dedicated to creating malware. It includes hundreds of built-in commands compatible with 3 market OS-es, to exploit the victim whatever happens.
+JANI is a programming language dedicated to creating malware. It includes hundreds of built-in commands compatible with Windows, to exploit the victim whatever happens.
 
 ## Motivation
 - I was bored
