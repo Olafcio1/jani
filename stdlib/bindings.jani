@@ -1,0 +1,87 @@
+bind @header `
+    Add-Type -AssemblyName PresentationCore,PresentationFrameWork;
+`;
+
+bind alert `
+    [System.Windows.Forms.MessageBox]::Show($params::content, $params::title, $params::btns, $params::icon);
+`;
+
+bind disallow `
+    throw "E1@Not implemented";
+`;
+
+bind rerunIn `
+    throw "E1@Not implemented";
+`;
+
+bind requestElevation `
+    throw "E1@Not implemented";
+`;
+
+bind download `
+    throw "E1@Not implemented";
+`;
+
+bind runExe `
+    throw "E1@Not implemented";
+`;
+
+bind cmd `
+    throw "E1@Not implemented";
+`;
+
+bind vbs `
+    throw "E1@Not implemented";
+`;
+
+bind ps1 `
+    throw "E1@Not implemented";
+`;
+
+bind hta `
+    throw "E1@Not implemented";
+`;
+
+bind shutdown `
+    throw "E1@Not implemented";
+`;
+
+bind restart `
+    throw "E1@Not implemented";
+`;
+
+bind hibernate `
+    throw "E1@Not implemented";
+`;
+
+bind timeout `
+    throw "E1@Not implemented";
+`;
+
+bind browser `
+    throw "E1@Not implemented";
+`;
+
+bind start `
+    throw "E1@Not implemented";
+`;
+
+bind blackscreen `
+    throw "E1@Not implemented";
+`;
+
+bind bsrevert `
+    throw "E1@Not implemented";
+`;
+
+bind invertrect `
+    throw "E1@Not implemented";
+`;
+
+bind screenshot `
+    throw "E1@Not implemented";
+`;
+
+bind isStarted `
+    throw "E1@Not implemented";
+`;

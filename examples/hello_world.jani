@@ -1,0 +1,6 @@
+alert(
+    title:   "Hacked by JANI"
+    content: "Hello, %USERNAME%!"
+    btns:    0
+    icon:    16
+);
