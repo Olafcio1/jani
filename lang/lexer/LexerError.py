@@ -1,0 +1,2 @@
+class LexerError(BaseException):
+    pass

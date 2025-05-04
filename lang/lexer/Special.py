@@ -65,6 +65,12 @@ class Keywords(StrEnum):
     false = "false"
     """Refers to the boolean value FALSE."""
 
+    any = "any"
+    """Refers to the type."""
+
+    function_type = "function"
+    """Refers to the type."""
+
     goto = "goto"
     """Teleports to the specified go-point."""
 
@@ -72,7 +78,10 @@ class Keywords(StrEnum):
     """Returns the further value from the function."""
 
     fallback = "fallback"
-    """Modifier keyword for a function keyword. If the name already exists, doesn't raise an error."""
+    """Modifier keyword for a function. Stops raising an error when the name already exists."""
+
+    noRemap = "no_remap"
+    """Modifier keyword for a function. Stops remapping the function, thus leaving its original name."""
 
     include = "include"
     """Imports the given JANI file into the global scope."""
@@ -98,6 +107,8 @@ class Keywords(StrEnum):
 class Operators(StrEnum):
     parenOpen = "("
     parenClose = ")"
+    squareOpen = "["
+    squareClose = "]"
     semicolon = ":"
     colon = ";"
     curlyOpen = "{"

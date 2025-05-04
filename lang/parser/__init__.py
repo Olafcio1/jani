@@ -6,7 +6,8 @@ from ..lexer import Lexer
 from ..lexer.Special import Keywords, Operators
 from ..token import Token
 
-from .BaseParser import BaseParser, ParserError
+from .BaseParser import BaseParser
+from .ParserError import ParserError
 
 from .CallMode import CallMode
 from .MathOp import MathOp
@@ -14,6 +15,7 @@ from .SpecialFunction import SpecialFunction
 
 from .types.PrimitiveType import PrimitiveType
 from .types.BooleanType import BooleanType
+from .types.StringLiType import StringLiType
 from .types.Type import Type
 
 class Parser(BaseParser):
@@ -274,14 +276,34 @@ class Parser(BaseParser):
             return PrimitiveType.BOOLEAN
         elif self.allow("keyword", meaning=Keywords.rgb):
             return PrimitiveType.RGB
+        elif self.allow("keyword", meaning=Keywords.function_type):
+            return PrimitiveType.FUNCTION
         elif self.allow("keyword", meaning=Keywords.true):
             return BooleanType.TRUE
         elif self.allow("keyword", meaning=Keywords.false):
             return BooleanType.FALSE
+        elif self.allow("keyword", meaning=Keywords.any):
+            return Type.ANY
+        elif tok := self.allow("string"):
+            value = tok.value
+            if len(value) != 1 or value[0]['type'] != 'text':
+                raise ParserError("String-literal types cannot include interpolation")
+            return StringLiType(value)
         else:
             raise ParserError("Expected a type")
 
-    def parseFunctionSignature(self):
+    def parseFunctionSignature(self, modifiersAvailable: list[Token] = []):
+        modifiers = []
+
+        while self.allow("operator", meaning=Operators.angleOpen):
+            kw = self.consumeKind("keyword").value
+            if kw in modifiers:
+                raise ParserError("Modifier %r already used" % kw)
+            elif kw not in modifiersAvailable:
+                raise ParserError("Expected a function modifier keyword, got %r" % kw)
+            modifiers.append(kw)
+            self.consumeEq(kind="operator", meaning=Operators.angleClose)
+
         name = self.consumeKind("literal").value
 
         self.consumeEq(kind="operator", meaning=Operators.parenOpen)
@@ -305,7 +327,7 @@ class Parser(BaseParser):
         self.consumeEq(kind="operator", meaning=Operators.semicolon)
         retType = self.parseType()
 
-        return name, args, retType
+        return name, args, retType, modifiers
 
     def parseCode(self) -> list[Token]:
         self.consumeEq(kind="operator", meaning=Operators.parenOpen)
@@ -327,21 +349,10 @@ class Parser(BaseParser):
     def parseFunctionDef(self) -> Token:
         self.consumeEq(kind="keyword", meaning=Keywords.function)
 
-        modifiersAvailable = [
-            Keywords.fallback
-        ]
-        modifiers = []
-
-        while self.allow("operator", meaning=Operators.angleOpen):
-            kw = self.consumeKind("keyword").value
-            if kw in modifiers:
-                raise ParserError("Modifier %r already used" % kw)
-            elif kw not in modifiersAvailable:
-                raise ParserError("Expected a function modifier keyword, got %r" % kw)
-            modifiers.append(kw)
-            self.consumeEq(kind="operator", meaning=Operators.angleClose)
-
-        name, args, retType = self.parseFunctionSignature()
+        name, args, retType, modifiers = self.parseFunctionSignature([
+            Keywords.fallback,
+            Keywords.noRemap
+        ])
         body = self.parseCode()
 
         parsed = Parser(body).run()
@@ -351,7 +362,8 @@ class Parser(BaseParser):
             "args": args,
             "body": parsed,
             "returns": retType,
-            "fallback": Keywords.fallback in modifiers
+            "fallback": Keywords.fallback in modifiers,
+            "remap": Keywords.noRemap not in modifiers
         })
 
     def parseInclude(self) -> Token:
@@ -387,12 +399,15 @@ class Parser(BaseParser):
     def parseDeclare(self) -> Token:
         self.consumeEq(kind="keyword", meaning=Keywords.declare)
 
-        name, args, retType = self.parseFunctionSignature()
+        name, args, retType, modifiers = self.parseFunctionSignature([
+            Keywords.noRemap
+        ])
 
         return Token("declare-function", {
             "name": name,
             "args": args,
-            "returns": retType
+            "returns": retType,
+            "remap": Keywords.noRemap not in modifiers
         })
 
     def parseBind(self) -> Token:
@@ -400,7 +415,7 @@ class Parser(BaseParser):
 
         if self.allow("operator", meaning=Operators.at):
             try:
-                name = self.consumeKind("literal").value.upper()
+                name = self.consumeKind("literal", "keyword").value.upper()
                 if name not in SpecialFunction._member_names_:
                     raise BaseException()
             except:

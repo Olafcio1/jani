@@ -1,5 +1,15 @@
+#    Add-Type -AssemblyName PresentationCore,PresentationFrameWork;
+#    Set-Alias 💤 Start-Sleep;
+
 bind @header `
-    Add-Type -AssemblyName PresentationCore,PresentationFrameWork;
+    Add-Type -AssemblyName System.Windows.Forms;
+    $col = [System.CodeDom.Compiler.TempFileCollection]::new();
+    $col.Dispose();
+    $rand = [System.Random]::new();
+`;
+
+bind @panic `
+    $col.Dispose();
 `;
 
 bind alert `
@@ -30,8 +40,23 @@ bind cmd `
     throw "E1@Not implemented";
 `;
 
+bind getTempFile `
+    $suffix = $params::suffix;
+    if ($suffix -eq $null) {
+        $suffix = ".tmp";
+    }
+    $path = ${ENV:TEMP} + "/" + [System.Random]::new().Next().ToString() + $suffix;
+    $fp = [System.IO.FileStream]::new($path, [System.IO.FileMode]::CreateNew);
+    $col.AddFile($path, $false);
+    return $fp;
+`;
+
 bind vbs `
-    throw "E1@Not implemented";
+    $fp = getTempFile(@{"suffix"=".vbs"});
+    $code = $params::content;
+    $fp.Write($code.ToCharArray(), 0, $code.Length);
+    $name = $fp.Name;
+    wscript //Nologo $name;
 `;
 
 bind ps1 `
@@ -55,7 +80,7 @@ bind hibernate `
 `;
 
 bind timeout `
-    throw "E1@Not implemented";
+    Start-Sleep $params::seconds;
 `;
 
 bind browser `

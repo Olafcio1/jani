@@ -1,11 +1,10 @@
 import string
 
 from ..token import Token
-from .BaseLexer import BaseLexer
-from .Special import *
 
-class LexerError(BaseException):
-    pass
+from .BaseLexer import BaseLexer
+from .LexerError import LexerError
+from .Special import *
 
 class Lexer(BaseLexer):
     def __init__(self, data: bytes):

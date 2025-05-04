@@ -1,0 +1,13 @@
+---
+    This package is a POC (Proof of Concept).
+    This code DOESN'T WORK, but may do in the future.
+---
+
+namespace refl;
+
+decl <no_remap> get(
+    object: any
+    property: text
+): any;
+
+static-include "bindings";

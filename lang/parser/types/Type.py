@@ -1,4 +1,6 @@
-from .PrimitiveType import PrimitiveType
-from .BooleanType import BooleanType
+from typing import ClassVar
 
-Type = PrimitiveType | BooleanType
+class Type():
+    ANY: ClassVar["Type"]
+
+Type.ANY = Type()

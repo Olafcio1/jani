@@ -7,13 +7,14 @@ from ..parser.CallMode import CallMode
 from ..parser.MathOp import MathOp
 from ..parser.SpecialFunction import SpecialFunction
 from ..parser.types.Type import Type
+from ..parser.types.PrimitiveType import PrimitiveType
+from ..parser.types.BooleanType import BooleanType
+from ..parser.types.StringLiType import StringLiType
 from ..token import Token
 
 from .BaseBuilder import BaseBuilder
+from .BuilderError import BuilderError
 from .Function import Function
-
-class BuilderError(BaseException):
-    pass
 
 Functions = dict[str, Function]
 Constants = dict[str, Token]
@@ -21,6 +22,8 @@ Constants = dict[str, Token]
 class Builder(BaseBuilder):
     filepath: str
     callMode: CallMode
+
+    panicFunc: str
 
     functions: Functions
     constants: Constants
@@ -40,6 +43,8 @@ class Builder(BaseBuilder):
         self._index = 0
         self._output = ""
 
+        self.panicFunc = ""
+
         self.functions = copy.functions if copy != None else {}
         self.constants = copy.constants if copy != None else {}
 
@@ -56,6 +61,8 @@ class Builder(BaseBuilder):
                 }))
 
     def run(self, *, context: "Builder | None" = None) -> str:
+        self._output += "function ^($n,$v){echo $n,$v;}"
+
         self.assignFunctions()
         self.assignConstants()
 
@@ -93,7 +100,7 @@ class Builder(BaseBuilder):
 
                 if name not in self.functions:
                     self.functions[name] = {
-                        "name": "j[$%d]+inv" % funs,
+                        "name": "j[$%d]+inv" % funs if tok.remap else name,
                         "body": tok.body,
                         "args": tok.args,
                         "fallback": tok.fallback,
@@ -114,7 +121,7 @@ class Builder(BaseBuilder):
                     raise BuilderError("Already existing function: %r" % name)
 
                 self.functions[name] = {
-                    "name": "j[$%d]+inv" % funs,
+                    "name": "j[$%d]+inv" % funs if tok.remap else name,
                     "args": tok.args,
                     "ret": tok.returns,
                     "defined": False,
@@ -134,7 +141,7 @@ class Builder(BaseBuilder):
                     f['body'] = tok.body
                     f['bound'] = True
                 elif isinstance(name, SpecialFunction):
-                    pass
+                    self.handleSpecialBind(tok)
                 else:
                     raise BuilderError("Cannot bind nonexistent function: %r" % name)
 
@@ -148,15 +155,97 @@ class Builder(BaseBuilder):
             else:
                 i += 1
 
+        self._output += "function *{%s;exit}" % self.panicFunc
+
         for n in self.functions:
             f = self.functions[n]
 
             if not f['defined']:
                 raise BuilderError("Unbound function: %r" % f)
             elif f['bound']:
-                self._output += "function %s($params){%s}" % (f['name'], f['body'])
+                self._output += "function %s($params){%s}" % (
+                    f['name'],
+                    self.runtimeTypecheck(f) + f['body']
+                )
             else:
-                self._output += "function %s($params){%s}" % (f['name'], Builder(f['body'], self.filepath, primaryContext=False, copy=self).run())
+                self._output += "function %s($params){%s}" % (
+                    f['name'],
+                    self.runtimeTypecheck(f) +
+                    Builder(f['body'], self.filepath, primaryContext=False, copy=self).run()
+                )
+
+    def runtimeTypecheck(self, token: Token) -> str:
+        code = ''
+        error = '{throw "E2@Invalid type: ""%s"" expected %s, got: " + %s}'
+        args = token['args']
+
+        for name in args:
+            namePS = self.translate(Token("string", {
+                "value": [{
+                    "type": "text",
+                    "value": name
+                }]
+            }))
+            ref = '$params[%s]' % namePS
+            arg = args[name]
+
+            kind = arg['type']
+            hasType = True
+            optional = arg['optional']
+
+            if kind == PrimitiveType.NULL:
+                check = "%s-ne$null" % ref
+                typeName = "null"
+                optional = False
+            elif isinstance(kind, PrimitiveType):
+                check = "%s.GetType()-ne%s" % (ref, {
+                    PrimitiveType.TEXT: "[string]",
+                    PrimitiveType.INTEGER: "[int]",
+                    PrimitiveType.FLOAT: "[double]",
+                    PrimitiveType.BOOLEAN: "[bool]",
+                    PrimitiveType.RGB: "[RGB]"
+                }[kind])
+                typeName = kind.name.lower()
+            elif isinstance(kind, BooleanType):
+                check = "%s-ne%s" % (ref, {
+                    BooleanType.TRUE: "$true",
+                    BooleanType.FALSE: "$false"
+                }[kind])
+                typeName = "literal " + kind.name.lower()
+            elif isinstance(kind, StringLiType):
+                check = "%s-ne%s" % (ref, self.translate(Token("string", {
+                    "value": [{
+                        "type": "text",
+                        "value": kind.literal
+                    }]
+                })))
+                typeName = "<string literal>"
+            elif kind == Type.ANY:
+                hasType = False
+            else:
+                raise BuilderError("Unrecognized type %r" % kind)
+
+            if hasType:
+                errcode = error % (
+                    namePS[1:-1],
+                    typeName,
+                    ref
+                )
+
+                if optional:
+                    code += "if(%s-ne$null-and%s)%s" % (ref, check, errcode)
+                else:
+                    code += "if(%s-eq$null-or%s)%s" % (ref, check, errcode)
+
+        return code
+
+    def handleSpecialBind(self, token: Token) -> None:
+        if token.name == SpecialFunction.HEADER:
+            self._output = token.body + self._output
+        elif token.name == SpecialFunction.PANIC:
+            self.panicFunc += token.body
+        else:
+            raise BuilderError("Unrecognized special bind %r" % token.name)
 
     def assignConstants(self) -> None:
         consts = 0
@@ -237,17 +326,17 @@ class Builder(BaseBuilder):
             raise BuilderError("Cannot translate token %r" % token)
 
     def callWithMode(self, mode: CallMode, token: Token, *, append: bool = True) -> str:
-        bindFunc = self.functions.get(token.func)
-        if bindFunc == None:
+        func = self.functions.get(token.func)
+        if func == None:
             raise BuilderError("No such function: %r" % token.func)
-        bindName = bindFunc['name']
+        boundName = func['name']
 
         data = ""
 
         if mode == CallMode.background:
             data += "^ "
 
-        data += bindName + " "
+        data += boundName + " "
         data += "@{"
 
         args = token.args

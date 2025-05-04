@@ -1,9 +1,7 @@
 from typing import Any, overload
 
 from ..token import Token, Undefined
-
-class ParserError(BaseException):
-    pass
+from .ParserError import ParserError
 
 class BaseParser():
     _input: list[Token]
