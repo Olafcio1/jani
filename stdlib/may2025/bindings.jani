@@ -81,7 +81,7 @@ bind shutdown `
 `;
 
 bind restart `
-    throw "E1@Not implemented";
+    shutdown /r /t $params::timeout /c $params::comment;
 `;
 
 bind hibernate `
