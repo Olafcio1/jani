@@ -19,13 +19,13 @@ def runFile(path: str):
         return Builder(parsed, path).run()
     except LexerError as e:
         print(f"{colored.fore_rgb(215, 20, 25)}{colored.Style.BOLD}LexerError:{colored.Style.RESET} {e!s}")
-        raise e
+        sys.exit(1)
     except ParserError as e:
         print(f"{colored.fore_rgb(215, 20, 25)}{colored.Style.BOLD}ParserError:{colored.Style.RESET} {e!s}")
-        raise e
+        sys.exit(1)
     except BuilderError as e:
         print(f"{colored.fore_rgb(215, 20, 25)}{colored.Style.BOLD}BuilderError:{colored.Style.RESET} {e!s}")
-        raise e
+        sys.exit(1)
 
 def main():
     if len(sys.argv) <= 1:

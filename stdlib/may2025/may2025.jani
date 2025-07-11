@@ -116,7 +116,7 @@ decl hta(
 decl shutdown(
     optional timeout: integer
     optional comment: text
-    optional forceClose: boolean
+    #optional forceClose: boolean
 ): nul;
 
 ---
@@ -129,7 +129,7 @@ decl shutdown(
 decl restart(
     optional timeout: integer
     optional comment: text
-    optional forceClose: boolean
+    #optional forceClose: boolean
 ): nul;
 
 ---
@@ -162,7 +162,7 @@ decl browser(
 ---
     starts the specified command in a new command line.
 ---
-decl start(
+decl <no_remap> start(
     command: text
 ): nul;
 
