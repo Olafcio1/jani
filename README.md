@@ -21,7 +21,7 @@ tar -xf $out
 del $out
 
 # Location
-$installDir = "${ENV:APPDATA}/Olafcio Solutions/JANI";
+$installDir = "${ENV:LOCALAPPDATA}/JANI";
 move "jani-main" $installDir;
 
 # Dependencies
