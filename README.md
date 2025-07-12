@@ -5,23 +5,51 @@ JANI is a programming language dedicated to creating malware. It includes hundre
 ![Downloads](https://img.shields.io/github/downloads/Olafcio1/jani/total?style=for-the-badge&logo=github&labelColor=2b2b2b&color=2b2b2b)
 
 ## ⏬ Installation
-To download the repository, click the green `Code` button on the top:
-<img src="./doc/image-1.png">
-and then `Download ZIP`:
-<img src="./doc/image-2.png">
-
-It will download a zip archive, that you need to extract (later I'll attach an image here).
-
-After that, you need to install Python, if you haven't already. Turn on PowerShell, and paste in the following content:
+Create a file caled `Setup.ps1` with the following contents and run it:
 ```powershell
-$out = "${ENV:TEMP}\python.exe";
-Invoke-WebRequest "python-link" -OutFile $out;
-$out;
-```
+# Python Installation
+$out = "${ENV:TEMP}/JANI Setup - Python 3.13.5 Installer.exe";
+iwr "https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe" -o $out;
+echo "[ 🐍 ] Installing Python...";
+& $out /passive Include_test=0 PrependPath=1 Include_freethreaded=1;
 
-Then, if there are no errors, Python have succesfully installed on your computer. Enter the start menu and make sure you see Python:
-<img src="./doc/image.png">
-*(You only need one version.)*
+# JANI Installation
+$out = "JANI Setup - Source Code.zip";
+iwr https://github.com/Olafcio1/jani/archive/refs/heads/main.zip -o $out
+echo "[ 🤐 ] Unpacking JANI...";
+tar -xf $out
+del $out
+
+# Location
+$installDir = "${ENV:APPDATA}/Olafcio Solutions/JANI";
+move "jani-main" $installDir;
+
+# Dependencies
+echo "[ 📦 ] Installing dependencies...";
+$raw = Get-Content requirements.txt;
+$lines = $raw.Split("`n");
+for ($i = 0; $i -lt $lines.Length; $i++) {
+    $line = $lines[$i];
+    if (($line -eq "") -or $line.StartsWith("#"))
+        continue;
+
+    $output = pip install -qq --no-input --disable-pip-version-check --no-color --no-python-version-warning $line;
+
+    if ($output.Contains("ERROR: ")) {
+        echo "[ ❌ ] Package $line installation failed.";
+    } else {
+        echo "[ ✅ ] Package $line installed.";
+    }
+}
+
+# Aliases
+echo "[ 💬 ] Adding as JANI to PowerShell config...";
+echo "`nfunction jani { python $installDir `$args }";
+
+# Setup Finished
+echo "[ 🤞 ] Setup finished. You should be able to run JANI like other commandlets in PowerShell.";
+pause;
+```
 
 ## 🧾 Syntax
 The language mainly consists of things you can find in others.
@@ -30,7 +58,7 @@ The language mainly consists of things you can find in others.
 
 Text (a.l.a. string) is a piece of text that you can do basically anything with.
 ```jani
-cmd(line: "notepad")
+cmd(line: "notepad");
 ```
 
 **What are the notable differences?**
@@ -39,28 +67,9 @@ cmd(line: "notepad")
 
 2. Standard strings have Batch interpolation. To add an environment variable, you specify it like in Batch, e.g.: `"Welcome, %USERNAME%!"`
 
-3. In JANI, you can run functions in the background, by using the call mode. It can be set in the current scope:
-```jani
-mode background;
-
-# This is called in the background
-download("...", "%USERPROFILE%\")
-
-# This is called in the background, too
-requestElevation()
-```
-or per each call:
-```jani
-# This is called in the background
-background download("...", "%USERPROFILE%\")
-
-# This is not
-requestElevation()
-```
-
-4. JANI's standard library isn't too big; it's a pain for writing typical programs. It's adjusted for writing malware, like the whole point of JANI.
+3. JANI's standard library isn't too big; it's a pain for writing typical programs. It's adjusted for writing malware, like the whole point of JANI.
 
 ## 💥 Intellisense
 ###### too lazy
 
-##### Please don't ask about the name. It's `JANI Aggresive NAT Intrusivity`. The J has no meaning like the whole name.
+##### Please don't ask about the name. It's `JANI Aggresive NAT Intrusivity`. It's a recursive acronym.
