@@ -40,15 +40,12 @@ bind requestElevation `
             [Security.Principal.WindowsBuiltInRole]::Administrator
         )
     ) {
-        Start-Process `
-            -FilePath 'powershell'
-            -ArgumentList (
-                '-File', $MyInvocation.MyCommand.Source,
-                '-ExecutionPolicy', 'Unrestricted',
-                '-Mta',
-                '-NoProfile'
-            )
-            -Verb RunAs
+        Start-Process -FilePath 'powershell' -ArgumentList @(
+            '-File', $MyInvocation.MyCommand.Source,
+            '-ExecutionPolicy', 'Unrestricted',
+            '-Mta',
+            '-NoProfile'
+        ) -Verb RunAs
         exit
     }
 `;
