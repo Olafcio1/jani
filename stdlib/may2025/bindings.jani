@@ -115,9 +115,10 @@ bind timeout `
 `;
 
 bind browser `
-    $url = params:url;
-    if (!$url::StartsWith("http://") && !$url::StartsWith("https://"))
-        throw ""E2@Unsupported URLl;
+    $url = $params:url;
+    if (!$url::StartsWith("http://") -and !$url::StartsWith("https://")) {
+        throw "E2@Unsupported URL";
+    }
     start($url);
 `;
 
