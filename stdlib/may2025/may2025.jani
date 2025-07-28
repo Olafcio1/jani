@@ -1,0 +1,216 @@
+---
+    `alert` displays a message box to the user, with the following options:
+
+    - title, which sets the title of the message box window
+    - content, which sets the content of the message box
+    - style, which sets the icon and buttons of the message box
+
+    it works the same as in VBScript.
+    if you are unfamiliar with creating message boxes, see the below constants -
+    - they might help you with understanding this function.
+---
+decl alert(
+    title:   text
+    content: text
+    btns:    integer
+    icon:    integer
+): nul;
+
+const ALERT_ICON_NONE = 8;
+#const ALERT_ICON_
+const ALERT_ICON_ERROR = 16;
+const ALERT_ICON_INFO = 24;
+const ALERT_ICON_QUESTION = 32;
+const ALERT_ICON_WARNING = 48;
+
+const ALERT_BTN_OK = 0;
+const ALERT_BTN_OKCANCEL = 1;
+const ALERT_BTN_ABORTRETRYIGNORE = 2;
+const ALERT_BTN_YESNOCANCEL = 3;
+const ALERT_BTN_YESNO = 4;
+const ALERT_BTN_RETRYCANCEL = 5;
+
+---
+    watches for the specified process in a new thread, and kills it when started.
+
+    process is an instance of a program, for example let's say you have 2 notepads open — that's 2 processes.
+    thread is a function running in the background — it's the same as running a statement with the background
+      keyword, e.g. `background alert(...)`
+    killing means abruptly stopping, it's like unplugging a desktop computer from its energy source.
+---
+decl disallow(
+    name: text
+): nul;
+
+---
+    stops the program, moves it to the specified location and runs it from there.
+
+    this is useful to hide in a place, where no one would suspect — e.g. some system directory.
+---
+decl rerunIn(
+    path: text
+): nul;
+
+---
+    asks the user for his admin password like other programs do, to try to get administrator access.
+---
+decl requestElevation(): boolean;
+
+---
+    downloads the content from the specified URL and saves it to `outputPath`.
+---
+decl download(
+    url: text
+    outputPath: text
+): nul;
+
+---
+    runs the executable at the given path.
+---
+decl runExe(
+    path: text
+): nul;
+
+---
+    runs the given command.
+---
+decl cmd(
+    line: text
+): nul;
+
+---
+    runs the given VBScript code.
+
+    VBS stands for Visual Basic Script, and is a common way to make scripts on Windows. as time passed though,
+    many programming languages have been created (e.g. Python), which completely eliminated VBScript with its
+    possibilities, and how easy it is. the main problem with VBS was that, it only worked on Windows. what about
+    macOS and Linux?
+---
+decl vbs(
+    content: text
+): nul;
+
+---
+    runs the given PowerShell code.
+---
+decl ps1(
+    content: text
+): nul;
+
+---
+    runs the given HTA code.
+
+    HTA stands for HTML Application, and is basically HTML with ActiveX controls, handled by IE (Internet Explorer).
+---
+decl hta(
+    content: text
+): nul;
+
+---
+    shuts the computer down.
+
+    if `timeout` is given, it shuts the computer down in `timeout` seconds.
+    if `timeout` and `comment` are given, it shows the `comment` in a kind-of message box until the user clicks OK or `timeout` seconds has passed.
+    if `forceClose` is not given or set to true, it force closes any running applications when the shutdown time is up.
+---
+decl shutdown(
+    optional timeout: integer
+    optional comment: text
+    #optional forceClose: boolean
+): nul;
+
+---
+    restarts the computer.
+
+    if `timeout` is given, it restarts the computer in `timeout` seconds.
+    if `timeout` and `comment` are given, it shows the `comment` in a kind-of message box until the user clicks OK or `timeout` seconds has passed.
+    if `forceClose` is not given or set to true, it force closes any running applications when the restart time is up.
+---
+decl restart(
+    optional timeout: integer
+    optional comment: text
+    #optional forceClose: boolean
+): nul;
+
+---
+    hibernates the computer.
+
+    if `timeout` is given, it hibernates the computer in `timeout` seconds.
+    if `timeout` and `comment` are given, it shows the `comment` in a kind-of message box until the user clicks OK or `timeout` seconds has passed.
+    if `forceClose` is not given or set to true, it force closes any running applications when the hibernate time is up.
+---
+decl hibernate(
+    optional timeout: integer
+    optional comment: text
+    optional forceClose: boolean
+): nul;
+
+---
+    waits the given amount of seconds.
+---
+decl timeout(
+    seconds: integer
+): nul;
+
+---
+    opens the specified URL in a new tab.
+---
+decl browser(
+    url: text
+): nul;
+
+---
+    starts the specified command in a new command line.
+---
+decl <no_remap> start(
+    command: text
+): nul;
+
+---
+    makes the user's screen black in `timeout` seconds. if `timeout` is not given, the screen is blacked out instantly.
+    to revert the blackening, either turn the program off, or execute `bsrevert()`.
+    if the parameter `color` is given, the screen is filled with this color instead.
+---
+decl blackscreen(
+    optional timeout: integer
+    optional color: rgb
+): nul;
+
+---
+    removes the screen blackening if active. otherwise, this is a no-operation.
+---
+decl bsrevert(): nul;
+
+---
+    inverts a region on the user's screen.
+---
+decl invertrect(
+    x: integer
+    y: integer
+    width: integer
+    height: integer
+): nul;
+
+---
+    makes a screenshot of the user's screen and returns a path to its PNG.
+---
+decl screenshot(): text;
+
+---
+    checks whether is there a process that the executable of is equivalent to the given one
+---
+decl isStarted(
+    exe: text
+): boolean;
+
+---
+    creates a new temporary file and returns its object.
+
+    the file is deleted after the program exits automatically, so you don't have to worry
+    about that.
+---
+decl <no_remap> getTempFile(
+    optional suffix: text
+): any;
+
+static-include "bindings";

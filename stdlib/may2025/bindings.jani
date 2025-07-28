@@ -1,0 +1,152 @@
+#    Add-Type -AssemblyName PresentationCore,PresentationFrameWork;
+#    Set-Alias 💤 Start-Sleep;
+
+bind @header `
+    Add-Type -AssemblyName System.Windows.Forms;
+    $col = [System.CodeDom.Compiler.TempFileCollection]::new();
+    $col.Dispose();
+    $rand = [System.Random]::new();
+`;
+
+bind @panic `
+    $col.Dispose();
+`;
+
+bind alert `
+    [System.Windows.Forms.MessageBox]::Show($params::content, $params::title, $params::btns, $params::icon);
+`;
+
+bind disallow `
+    $proc = $params::name;
+    Start-Process -WindowStyle Hidden -FilePath "powershell" -ArgumentList @("
+        while (true) {
+            taskkill /f /im $proc;
+        }
+    ");
+`;
+
+bind rerunIn `
+    $old = ($MyInvocation.MyCommand).Path;
+    $path = $params::path;
+    Copy-File $old $path;
+    Start-Process -WindowStyle Hidden -FilePath powershell -ArgumentList @("-NoProfile", "-Mta", "-ExecutionPolicy", "Unrestricted", $path);
+`;
+
+bind requestElevation `
+    if (!
+        (New-Object Security.Principal.WindowsPrincipal(
+            [Security.Principal.WindowsIdentity]::GetCurrent()
+        )).IsInRole(
+            [Security.Principal.WindowsBuiltInRole]::Administrator
+        )
+    ) {
+        Start-Process -FilePath 'powershell' -ArgumentList @(
+            '-File', $MyInvocation.MyCommand.Source,
+            '-ExecutionPolicy', 'Unrestricted',
+            '-Mta',
+            '-NoProfile'
+        ) -Verb RunAs
+        exit
+    }
+`;
+
+bind download `
+    curl $params::url -o $outputPath;
+`;
+
+bind runExe `
+    Start-Process -WindowStyle Hidden -FilePath $params::path;
+`;
+
+bind cmd `
+    $code = $params::line;
+    cmd /c "$code";
+`;
+
+bind getTempFile `
+    $suffix = $params::suffix;
+    if ($suffix -eq $null) {
+        $suffix = ".tmp";
+    }
+    $path = ${ENV:TEMP} + "/" + [System.Random]::new().Next().ToString() + $suffix;
+    $fp = [System.IO.FileStream]::new($path, [System.IO.FileMode]::CreateNew);
+    $col.AddFile($path, $false);
+    return $fp;
+`;
+
+bind vbs `
+    $fp = getTempFile(@{"suffix"=".vbs"});
+    $code = $params::content;
+    $fp.Write($code.ToCharArray(), 0, $code.Length);
+    $name = $fp.Name;
+    wscript //Nologo $name;
+`;
+
+bind ps1 `
+    $fp = getTempFile(@{"suffix"=".ps1"});
+    $code = $params::content;
+    $fp.Write($code.ToCharArray(), 0, $code.Length);
+    $name = $fp.Name;
+    start powershell -WindowStyle Hidden $name;
+`;
+
+bind hta `
+    $fp = getTempFile(@{"suffix"=".hta"});
+    $code = $params::content;
+    $fp.Write($code.ToCharArray(), 0, $code.Length);
+    $name = $fp.Name;
+    start /min $name;
+`;
+
+bind shutdown `
+    shutdown /s /t $params::timeout /c $params::comment;
+`;
+
+bind restart `
+    shutdown /r /t $params::timeout /c $params::comment;
+`;
+
+bind hibernate `
+    shutdown /h /t $params::timeout /c $params::comment;
+`;
+
+bind timeout `
+    Start-Sleep $params::seconds;
+`;
+
+bind browser `
+    $url = $params:url;
+    if (!$url::StartsWith("http://") -and !$url::StartsWith("https://")) {
+        throw "E2@Unsupported URL";
+    }
+    start($url);
+`;
+
+bind start `
+    start $params::command;
+`;
+
+bind blackscreen `
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = "Sigma sigming ligma figming"
+    $form.Width = 1920
+    $form.Height = 1440
+
+    $form.ShowDialog()
+`;
+
+bind bsrevert `
+    throw "E1@Not implemented";
+`;
+
+bind invertrect `
+    throw "E1@Not implemented";
+`;
+
+bind screenshot `
+    throw "E1@Not implemented";
+`;
+
+bind isStarted `
+    throw "E1@Not implemented";
+`;

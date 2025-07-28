@@ -1,0 +1,8 @@
+decl regAddValue(
+    path:   text
+    name:   text
+    type:   text
+    data:   text
+): nul;
+
+static-include "bindings";

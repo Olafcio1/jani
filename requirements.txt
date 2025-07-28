@@ -1,0 +1,5 @@
+# Used for terminal coloring
+colored>=2.2.4
+
+# Used for building
+cryptography

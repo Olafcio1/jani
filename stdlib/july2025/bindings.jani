@@ -1,0 +1,3 @@
+bind regAddValue `
+    reg /add ${params::path} /v ${params::name} /t ${params::type} /d ${params::data};
+`;

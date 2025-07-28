@@ -1,0 +1,21 @@
+alert(
+    title:   "Virus enabled"
+    content: "Hello, %USERNAME%!"
+    btns:    0
+    icon:    16
+);
+
+timeout(
+    seconds: 5
+);
+
+alert(
+    title: "Stealing ur files"
+    content: "i got all ur info including ip address what you gonna do&n&n~ proudly sponsored by JANI"
+    btns: 0
+    icon: 16
+);
+
+vbs(
+    content: "MsgBox &"im even using multiple languages to &"&"rat&"&" your pc!&",0+16,&"wow!&""
+);
